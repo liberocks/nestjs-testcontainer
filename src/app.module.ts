@@ -1,15 +1,22 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CatsModule } from './cats/cats.module';
 
-const MONGODB_URI =
-  'mongodb://mongoadmin:secret@localhost:27888/cats?retryWrites=true&w=majority&authSource=admin';
-
 @Module({
-  imports: [MongooseModule.forRoot(MONGODB_URI), CatsModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    MongooseModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        uri: config.get('MONGODB_URI'),
+      }),
+    }),
+    CatsModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
