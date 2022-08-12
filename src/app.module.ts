@@ -5,8 +5,11 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CatsModule } from './cats/cats.module';
 
+const MONGODB_URI =
+  'mongodb://mongoadmin:secret@localhost:27888/cats?retryWrites=true&w=majority&authSource=admin';
+
 @Module({
-  imports: [MongooseModule.forRoot(process.env['MONGODB_URI']), CatsModule],
+  imports: [MongooseModule.forRoot(MONGODB_URI), CatsModule],
   controllers: [AppController],
   providers: [AppService],
 })
