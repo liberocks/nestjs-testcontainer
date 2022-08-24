@@ -1,15 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { GenericContainer } from 'testcontainers';
-
 import * as request from 'supertest';
-import { AppModule } from './../src/app.module';
+
+import { AppModule } from '../src/app.module';
 
 jest.setTimeout(60 * 1000);
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
-  let container;
+  let server: any;
+  let container: any;
 
   beforeEach(async () => {
     container = await new GenericContainer('mongo:5.0.3')
@@ -22,16 +23,17 @@ describe('AppController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     await app.init();
+
+    // Reference the server instance
+    server = app.getHttpServer();
   });
 
   afterEach(async () => {
-    if (container) await container.stop();
+    await container.stop();
+    server.close();
   });
 
   it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+    return request(server).get('/').expect(200).expect('Hello World!');
   });
 });

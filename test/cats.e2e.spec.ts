@@ -3,14 +3,16 @@ import { INestApplication } from '@nestjs/common';
 import { GenericContainer } from 'testcontainers';
 import { isEmpty } from 'lodash';
 import * as request from 'supertest';
+
 import { AppModule } from '../src/app.module';
-import { Cat } from 'src/cats/schemas/cat.schema';
+import { Cat } from '../src/cats/schemas/cat.schema';
 
 jest.setTimeout(60 * 1000);
 
 describe('CatsController (e2e)', () => {
   let app: INestApplication;
-  let container: null | any = null;
+  let server: any;
+  let container: any;
 
   beforeEach(async () => {
     container = await new GenericContainer('mongo:5.0.3')
@@ -23,10 +25,14 @@ describe('CatsController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     await app.init();
+
+    // Reference the server instance
+    server = app.getHttpServer();
   });
 
   afterEach(async () => {
-    if (container) await container.stop();
+    await container.stop();
+    server.close();
   });
 
   it('/cats (POST)', async () => {
@@ -34,7 +40,7 @@ describe('CatsController (e2e)', () => {
     const cat = { name: 'Cat', age: 1, breed: 'Persian' };
 
     // execute process
-    const result = await request(app.getHttpServer()).post('/cats').send(cat);
+    const result = await request(server).post('/cats').send(cat);
 
     // assess result
     expect(result.status).toBe(201);
@@ -48,8 +54,8 @@ describe('CatsController (e2e)', () => {
     const cat = { name: 'Cat', age: 1, breed: 'Persian' };
 
     // execute process
-    await request(app.getHttpServer()).post('/cats').send(cat);
-    const result = await request(app.getHttpServer()).get('/cats');
+    await request(server).post('/cats').send(cat);
+    const result = await request(server).get('/cats');
 
     // assess result
     expect(result.status).toBe(200);
@@ -64,10 +70,8 @@ describe('CatsController (e2e)', () => {
     const cat = { name: 'Cat', age: 1, breed: 'Persian' };
 
     // execute process
-    const init = await request(app.getHttpServer()).post('/cats').send(cat);
-    const result = await request(app.getHttpServer()).get(
-      `/cats/${init.body._id}`,
-    );
+    const init = await request(server).post('/cats').send(cat);
+    const result = await request(server).get(`/cats/${init.body._id}`);
 
     // assess result
     expect(result.status).toBe(200);
@@ -81,11 +85,9 @@ describe('CatsController (e2e)', () => {
     const cat = { name: 'Cat', age: 1, breed: 'Persian' };
 
     // execute process
-    const init = await request(app.getHttpServer()).post('/cats').send(cat);
-    await request(app.getHttpServer()).delete(`/cats/${init.body._id}`);
-    const result = await request(app.getHttpServer()).get(
-      `/cats/${init.body._id}`,
-    );
+    const init = await request(server).post('/cats').send(cat);
+    await request(server).delete(`/cats/${init.body._id}`);
+    const result = await request(server).get(`/cats/${init.body._id}`);
 
     // assess result
     expect(isEmpty(result.body)).toBe(true);

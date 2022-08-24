@@ -1,18 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CatsService } from './cats.service';
-import { getModelToken } from '@nestjs/mongoose';
-import { Cat } from './schemas/cat.schema';
 import { Model } from 'mongoose';
+import { getModelToken } from '@nestjs/mongoose';
 
-const mockCat = {
-  name: 'Cat #1',
-  breed: 'Breed #1',
-  age: 4,
-};
+import { CatsService } from './cats.service';
+import { Cat } from './schemas/cat.schema';
 
 describe('CatsService', () => {
   let service: CatsService;
   let model: Model<Cat>;
+
+  const mockCat = {
+    name: 'Cat #1',
+    breed: 'Breed #1',
+    age: 4,
+  };
 
   const catsArray = [
     {
