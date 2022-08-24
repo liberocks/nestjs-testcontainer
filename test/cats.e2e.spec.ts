@@ -15,10 +15,12 @@ describe('CatsController (e2e)', () => {
   let container: any;
 
   beforeEach(async () => {
+    const MONGODB_PORT = 5556;
     container = await new GenericContainer('mongo:5.0.3')
-      .withExposedPorts({ container: 27017, host: 5555 })
+      .withExposedPorts({ container: 27017, host: MONGODB_PORT })
       .start();
 
+    process.env.MONGODB_URI = `mongodb://localhost:${MONGODB_PORT}/cats?retryWrites=true&w=majority&authSource=admin`;
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();

@@ -34,15 +34,21 @@ describe('CatsService', () => {
   ];
 
   beforeEach(async () => {
+    const MONGODB_PORT = 5555;
     container = await new GenericContainer('mongo:5.0.3')
-      .withExposedPorts({ container: 27017, host: 5556 })
+      .withExposedPorts({ container: 27017, host: MONGODB_PORT })
       .start();
 
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({
           isGlobal: true,
-          envFilePath: 'integration.env',
+          ignoreEnvFile: true,
+          load: [
+            () => ({
+              MONGODB_URI: `mongodb://localhost:${MONGODB_PORT}/cats?retryWrites=true&w=majority&authSource=admin`,
+            }),
+          ],
         }),
         MongooseModule.forRootAsync({
           inject: [ConfigService],

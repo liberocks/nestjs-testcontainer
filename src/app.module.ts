@@ -10,9 +10,10 @@ import { CatsModule } from './cats/cats.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['e2e', 'integration'].includes(process.env.NODE_ENV)
-        ? `${process.env.NODE_ENV}.env`
-        : '.env',
+      envFilePath: '.env',
+      ignoreEnvFile: ['unit', 'e2e', 'integration', 'jest'].includes(
+        process.env.NODE_ENV,
+      ),
     }),
     MongooseModule.forRootAsync({
       inject: [ConfigService],
